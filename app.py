@@ -3,6 +3,7 @@
 import streamlit as st
 from dotenv import load_dotenv
 
+from jobfit.errors import friendly_error
 from jobfit.llm import JobFitClient, LLMConfig
 from jobfit.pdf import pdf_to_text
 from jobfit.prompts import LANGUAGES
@@ -70,14 +71,14 @@ if run_analysis and client:
         try:
             st.session_state["report"] = client.analyze(cv_text, job_text, language)
         except Exception as exc:  # network, auth, or a reply that never validated
-            st.error(f"Analysis failed: {exc}")
+            st.error(f"Analysis failed: {friendly_error(exc)}")
 
 if run_letter and client:
     with st.spinner("Drafting your application email…"):
         try:
             st.session_state["letter"] = client.cover_letter(cv_text, job_text, language)
         except Exception as exc:
-            st.error(f"Could not write the email: {exc}")
+            st.error(f"Could not write the email: {friendly_error(exc)}")
 
 report = st.session_state.get("report")
 if report:

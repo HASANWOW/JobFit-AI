@@ -34,7 +34,9 @@ class JobFitClient:
         if not config.api_key:
             raise ValueError("No API key set. Add LLM_API_KEY to your .env file.")
         self.config = config
-        self.client = OpenAI(api_key=config.api_key, base_url=config.base_url)
+        # The SDK retries rate limits (429) and server errors (5xx) with exponential backoff;
+        # free tiers hit "high demand" often, so allow a few more attempts than the default 2
+        self.client = OpenAI(api_key=config.api_key, base_url=config.base_url, max_retries=5, timeout=60)
 
     def _chat(self, system: str, user: str, *, json_mode: bool = False, temperature: float = 0.2) -> str:
         kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
